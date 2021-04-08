@@ -129,7 +129,7 @@ class Cisco::Ise::Guests < PlaceOS::Driver
   end
 
   def test(xml_string : String)
-    response = post("/guestuser/", body: xml_string, headers: {
+    response = post("/guestuser/", body: XML.parse(xml_string).to_s, headers: {
       "Accept"        => TYPE_HEADER,
       "Content-Type"  => TYPE_HEADER,
       "Authorization" => @basic_auth,
