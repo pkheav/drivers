@@ -8,13 +8,14 @@ class Cisco::Ise::Guests < PlaceOS::Driver
 
   default_settings({
     # We may grab this data through discovery mechanisms in the future but for now use a setting
-    auth_token:        "auth_token",
+    username:          "user",
+    password:          "pass",
     sponsor_user_name: "sponsor",
     portal_id:         "portal101",
     timezone:          "Australia/Sydney",
   })
 
-  @auth_token : String = ""
+  @basic_auth : String = ""
   @sponsor_user_name : String = ""
   @portal_id : String = ""
   @sms_service_provider : String? = nil
@@ -29,7 +30,7 @@ class Cisco::Ise::Guests < PlaceOS::Driver
   end
 
   def on_update
-    @auth_token = setting?(String, :auth_token) || "auth_token"
+    @basic_auth = "Basic #{Base64.strict_encode("#{setting?(String, :username)}:#{setting?(String, :password)}")}"
     @sponsor_user_name = setting?(String, :sponsor_user_name) || "sponsor"
     @portal_id = setting?(String, :portal_id) || "portal101"
     @sms_service_provider = setting?(String, :sms_service_provider)
@@ -102,7 +103,7 @@ class Cisco::Ise::Guests < PlaceOS::Driver
     response = post("/guestuser/", body: xml_string, headers: {
       "Accept"        => TYPE_HEADER,
       "Content-Type"  => TYPE_HEADER,
-      "Authorization" => "Basic #{@auth_token}",
+      "Authorization" => @basic_auth,
     })
 
     raise "failed to create guest, code #{response.status_code}\n#{response.body}" unless response.success?
@@ -116,7 +117,7 @@ class Cisco::Ise::Guests < PlaceOS::Driver
     response = get("/guestuser/#{id}", headers: {
       "Accept"        => TYPE_HEADER,
       "Content-Type"  => TYPE_HEADER,
-      "Authorization" => "Basic #{@auth_token}",
+      "Authorization" => @basic_auth,
     })
     parsed_body = XML.parse(response.body)
     guest_user = parsed_body.first_element_child.not_nil!
@@ -125,5 +126,40 @@ class Cisco::Ise::Guests < PlaceOS::Driver
       username: guest_info.children.find { |c| c.name == "userName" }.not_nil!.content,
       password: guest_info.children.find { |c| c.name == "password" }.not_nil!.content
     }
+  end
+
+  def test(xml_string : String)
+    response = post("/guestuser/", body: xml_string, headers: {
+      "Accept"        => TYPE_HEADER,
+      "Content-Type"  => TYPE_HEADER,
+      "Authorization" => @basic_auth,
+    })
+    raise "failed to create guest, code #{response.status_code}\n#{response.body}" unless response.success?
+  end
+
+  def test2
+    xml_string = %(<?xml version="1.0" encoding="UTF-8"?>
+<ns2:guestuser xmlns:ns2="identity.ers.ise.cisco.com">
+<guestAccessInfo>
+<fromDate>08/06/2014 23:22</fromDate>
+<toDate>08/07/2014 23:22</toDate>
+<validDays>1</validDays>
+</guestAccessInfo>
+<guestInfo>
+<company>New Company</company>
+<emailAddress>john@example.com</emailAddress>
+<firstName>John</firstName>
+<lastName>Doe</lastName>
+<notificationLanguage>English</notificationLanguage>
+<phoneNumber>9999998877</phoneNumber>
+<smsServiceProvider>Global Default</smsServiceProvider>
+<userName>autoguestuser1</userName>
+</guestInfo>
+<guestType>Daily</guestType>
+<personBeingVisited>sponsor</personBeingVisited>
+<portalId>portal101</portalId>
+<reasonForVisit>interview</reasonForVisit>
+</ns2:guestuser>)
+    test(xml_string)
   end
 end
