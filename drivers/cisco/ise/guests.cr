@@ -1,5 +1,7 @@
 require "xml"
 
+# Docs https://developer.cisco.com/docs/identity-services-engine/3.0/#!guest-user/resource-definition
+
 class Cisco::Ise::Guests < PlaceOS::Driver
   # Discovery Information
   descriptive_name "Cisco ISE Guest Control"
@@ -128,7 +130,7 @@ class Cisco::Ise::Guests < PlaceOS::Driver
     }
   end
 
-  def test(xml_string : String)
+  def test_xml(xml_string : String)
     response = post("/guestuser/", body: XML.parse(xml_string).to_s, headers: {
       "Accept"        => TYPE_HEADER,
       "Content-Type"  => TYPE_HEADER,
@@ -160,6 +162,15 @@ class Cisco::Ise::Guests < PlaceOS::Driver
 <portalId>portal101</portalId>
 <reasonForVisit>interview</reasonForVisit>
 </ns2:guestuser>)
-    test(xml_string)
+    test_xml(xml_string)
+  end
+
+  def test_json(json : String)
+    response = post("/guestuser/", body: json, headers: {
+      "Accept"        => "application/json",
+      "Content-Type"  => "application/json",
+      "Authorization" => @basic_auth,
+    })
+    raise "failed to create guest, code #{response.status_code}\n#{response.body}" unless response.success?
   end
 end
