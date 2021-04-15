@@ -91,6 +91,7 @@ class Cisco::Ise::Guests < PlaceOS::Driver
     xml_string += %(
           <location>#{@location}</location>) if @location
 
+    password = UUID.random.to_s
     xml_string += %(
           <toDate>#{to_date}</toDate>
           <validDays>1</validDays>
@@ -108,7 +109,6 @@ class Cisco::Ise::Guests < PlaceOS::Driver
           <smsServiceProvider>#{sms_service_provider}</smsServiceProvider>) if sms_service_provider
 
     username = UUID.random.to_s
-    password = UUID.random.to_s
     xml_string += %(
           <userName>#{username}</userName>
         </guestInfo>
