@@ -98,6 +98,7 @@ class Cisco::Ise::Guests < PlaceOS::Driver
         <guestInfo>
           <company>#{company_name}</company>
           <emailAddress>#{attendee_email}</emailAddress>
+          <password>#{password}</password>
           <firstName>#{first_name}</firstName>
           <lastName>#{last_name}</lastName>
           <notificationLanguage>English</notificationLanguage>
@@ -110,7 +111,6 @@ class Cisco::Ise::Guests < PlaceOS::Driver
     password = UUID.random.to_s
     xml_string += %(
           <userName>#{username}</userName>
-          <password>#{password}</password>
         </guestInfo>
         <guestType>#{guest_type}</guestType>
         <portalId>#{portal_id}</portalId>
