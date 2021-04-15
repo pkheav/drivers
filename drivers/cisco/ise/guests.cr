@@ -102,8 +102,8 @@ class Cisco::Ise::Guests < PlaceOS::Driver
           <password>#{password}</password>
           <firstName>#{first_name}</firstName>
           <lastName>#{last_name}</lastName>
-          <notificationLanguage>English</notificationLanguage>
-          <phoneNumber>#{phone_number}</phoneNumber>)
+          <phoneNumber>#{phone_number}</phoneNumber>
+          <notificationLanguage>English</notificationLanguage>)
 
     xml_string += %(
           <smsServiceProvider>#{sms_service_provider}</smsServiceProvider>) if sms_service_provider
