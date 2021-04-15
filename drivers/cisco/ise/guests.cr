@@ -100,8 +100,7 @@ class Cisco::Ise::Guests < PlaceOS::Driver
           <company>#{company_name}</company>
           <emailAddress>#{attendee_email}</emailAddress>
           <password>#{password}</password>
-          <phoneNumber>#{phone_number}</phoneNumber>
-          <notificationLanguage>English</notificationLanguage>)
+          <phoneNumber>#{phone_number}</phoneNumber>)
 
     xml_string += %(
           <smsServiceProvider>#{sms_service_provider}</smsServiceProvider>) if sms_service_provider
