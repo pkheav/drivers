@@ -78,13 +78,19 @@ class Cisco::Ise::Guests < PlaceOS::Driver
     # Now generate our XML body
     xml_string = %(
       <?xml version="1.0" encoding="UTF-8"?>
-      <ns2:guestuser xmlns:ns2="identity.ers.ise.cisco.com">
+      <ns2:guestuser xmlns:ns2="identity.ers.ise.cisco.com">)
+
+    # customFields is required for ISE API v2.2
+    # since location is also required for 2.2, we can check if location is present
+    xml_string = %(
+        <customFields></customFields>) if @location
+
+    xml_string += %(
         <guestAccessInfo>
           <fromDate>#{from_date}</fromDate>)
 
     xml_string += %(
-          <location>#{@location}</location>
-    ) if @location
+          <location>#{@location}</location>) if @location
 
     xml_string += %(
           <toDate>#{to_date}</toDate>
@@ -96,12 +102,10 @@ class Cisco::Ise::Guests < PlaceOS::Driver
           <firstName>#{first_name}</firstName>
           <lastName>#{last_name}</lastName>
           <notificationLanguage>English</notificationLanguage>
-          <phoneNumber>#{phone_number}</phoneNumber>
-    )
+          <phoneNumber>#{phone_number}</phoneNumber>)
 
     xml_string += %(
-          <smsServiceProvider>#{sms_service_provider}</smsServiceProvider>
-    ) if sms_service_provider
+          <smsServiceProvider>#{sms_service_provider}</smsServiceProvider>) if sms_service_provider
 
     username = UUID.random.to_s
     password = UUID.random.to_s
@@ -111,8 +115,7 @@ class Cisco::Ise::Guests < PlaceOS::Driver
         </guestInfo>
         <guestType>#{guest_type}</guestType>
         <portalId>#{portal_id}</portalId>
-      </ns2:guestuser>
-    )
+      </ns2:guestuser>)
 
     response = post("/guestuser/", body: xml_string, headers: {
       "Accept"        => TYPE_HEADER,
