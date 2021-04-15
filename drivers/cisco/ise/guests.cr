@@ -76,8 +76,7 @@ class Cisco::Ise::Guests < PlaceOS::Driver
     company_name ||= attendee_email.split('@')[1].split('.')[0].capitalize
 
     # Now generate our XML body
-    xml_string = %(
-      <?xml version="1.0" encoding="UTF-8"?>
+    xml_string = %(<?xml version="1.0" encoding="UTF-8"?>
       <ns2:guestuser xmlns:ns2="identity.ers.ise.cisco.com">)
 
     # customFields is required for ISE API v2.2
@@ -117,7 +116,7 @@ class Cisco::Ise::Guests < PlaceOS::Driver
         <portalId>#{portal_id}</portalId>
       </ns2:guestuser>)
 
-    response = post("/guestuser/", body: XML.parse(xml_string).to_s, headers: {
+    response = post("/guestuser/", body: xml_string, headers: {
       "Accept"        => TYPE_HEADER,
       "Content-Type"  => TYPE_HEADER,
       "Authorization" => @basic_auth,
