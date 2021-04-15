@@ -82,7 +82,7 @@ class Cisco::Ise::Guests < PlaceOS::Driver
 
     # customFields is required for ISE API v2.2
     # since location is also required for 2.2, we can check if location is present
-    xml_string = %(
+    xml_string += %(
         <customFields></customFields>) if @location
 
     xml_string += %(
