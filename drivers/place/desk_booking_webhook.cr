@@ -100,6 +100,7 @@ class Place::DeskBookingWebhook < PlaceOS::Driver
     headers["Content-Type"] = "application/json; charset=UTF-8"
     # If @mapped_id_key is present, then we need to map resource ids before sending the payload
     # Otherwise, just use update_json unmodified as the payload
+    logger.debug { "mapped_id_key #{@mapped_id_key}" } if @debug
     payload = @mapped_id_key ? map_resource_id(update).to_json : update_json
 
     logger.debug { "Posting: #{payload} \n with Headers: #{headers}" } if @debug
@@ -114,12 +115,15 @@ class Place::DeskBookingWebhook < PlaceOS::Driver
 
   private def map_resource_id(update : BookingUpdate)
     metadata = Metadata.from_json(staff_api.metadata(update.zones.first, @metadata_key).get.to_json)
+    logger.debug { "metadata #{metadata}" } if @debug
     matching_resource = metadata.details.as_a.find(&.["id"].==(update.resource_id)).not_nil!
+    logger.debug { "matching_resource #{matching_resource}" } if @debug
     # If there is a mapped id value, use that for update.resource_id
     # Otherwise, just use the current update.resource_id
     if mapped_id_value = matching_resource[@mapped_id_key.not_nil!]?
       update.resource_id = mapped_id_value.as_s
     end
+    logger.debug { "resource_id #{update.resouce_id}" } if @debug
     update
   end
 end
