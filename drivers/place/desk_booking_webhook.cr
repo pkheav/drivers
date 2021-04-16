@@ -114,7 +114,8 @@ class Place::DeskBookingWebhook < PlaceOS::Driver
   alias Metadata = PlaceOS::Client::API::Models::Metadata
 
   private def map_resource_id(update : BookingUpdate)
-    metadata = Metadata.from_json(staff_api.metadata(update.zones.first, @metadata_key).get.to_json)
+    json = staff_api.metadata(update.zones[0], @metadata_key).get.to_json
+    metadata = Metadata.from_json(json)
     logger.debug { "metadata #{metadata}" } if @debug
     matching_resource = metadata.details.as_a.find(&.["id"].==(update.resource_id)).not_nil!
     logger.debug { "matching_resource #{matching_resource}" } if @debug
