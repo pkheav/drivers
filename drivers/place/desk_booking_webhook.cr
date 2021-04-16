@@ -97,7 +97,7 @@ class Place::DeskBookingWebhook < PlaceOS::Driver
       logger.debug { "booking_type match = #{update.booking_type == @booking_category}"}
     end
 
-    return unless update.booking_type == @booking_category && (@zone_ids & update.zones).size > 0
+    return if update.booking_type != @booking_category || (@zone_ids & update.zones).empty?
 
     logger.debug { "processing update" }
 
@@ -111,7 +111,7 @@ class Place::DeskBookingWebhook < PlaceOS::Driver
     logger.debug { "Posting: #{payload} \n with Headers: #{headers}" } if @debug
     response = HTTP::Client.post @post_uri, headers, body: payload
     raise "Request failed with #{response.status_code}: #{response.body}" unless response.status_code < 300
-    "#{response.status_code}: #{response.body}"
+    logger.debug { "#{response.status_code}: #{response.body}" } if @debug
   end
 
   alias Metadata = PlaceOS::Client::API::Models::Metadata
