@@ -94,9 +94,12 @@ class Place::DeskBookingWebhook < PlaceOS::Driver
     if @debug
       logger.debug { "received update #{update}" }
       logger.debug { "matching zones are #{@zone_ids & update.zones}" }
+      logger.debug { "booking_type match = #{update.booking_type == @booking_category}"}
     end
 
     return if update.booking_type != @booking_category || !(@zone_ids & update.zones).empty?
+
+    logger.debug { "processing update" }
 
     headers = HTTP::Headers.new
     @custom_headers.each { |key, value| headers[key] = value }
