@@ -123,7 +123,7 @@ class Place::DeskBookingWebhook < PlaceOS::Driver
     if mapped_id_value = matching_resource[@mapped_id_key.not_nil!]?
       update.resource_id = mapped_id_value.as_s
     end
-    logger.debug { "resource_id #{update.resouce_id}" } if @debug
+    logger.debug { "resource_id #{update.resource_id}" } if @debug
     update
   end
 end
