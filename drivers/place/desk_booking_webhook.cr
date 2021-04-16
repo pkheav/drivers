@@ -45,7 +45,6 @@ class Place::DeskBookingWebhook < PlaceOS::Driver
 
   def on_load
     monitor("staff/booking/changed") do |_subscription, booking_update|
-      logger.debug { "received booking changed event #{booking_update}" }
       process_update(booking_update)
     end
     on_update
@@ -91,6 +90,12 @@ class Place::DeskBookingWebhook < PlaceOS::Driver
   def process_update(update_json : String)
     update = BookingUpdate.from_json(update_json)
     # Only do something if the update is for the booking_type and zones specified in the settings
+
+    if @debug
+      logger.debug { "received update #{update}" }
+      logger.debug { "matching zones are #{@zone_ids & update.zones}" }
+    end
+
     return if update.booking_type != @booking_category || !(@zone_ids & update.zones).empty?
 
     headers = HTTP::Headers.new
