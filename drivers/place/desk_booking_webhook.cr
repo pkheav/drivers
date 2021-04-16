@@ -97,7 +97,7 @@ class Place::DeskBookingWebhook < PlaceOS::Driver
       logger.debug { "booking_type match = #{update.booking_type == @booking_category}"}
     end
 
-    return if update.booking_type != @booking_category || !(@zone_ids & update.zones).empty?
+    return unless update.booking_type == @booking_category && (@zone_ids & update.zones).size > 0
 
     logger.debug { "processing update" }
 
