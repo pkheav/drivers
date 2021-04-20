@@ -1,4 +1,5 @@
 require "xml"
+require "json"
 
 # Tested with Cisco ISE API v2.2
 # https://developer.cisco.com/docs/identity-services-engine/3.0/#!guest-user/resource-definition
