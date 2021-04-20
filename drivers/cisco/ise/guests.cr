@@ -1,5 +1,4 @@
 require "xml"
-require "json"
 
 # Tested with Cisco ISE API v2.2
 # https://developer.cisco.com/docs/identity-services-engine/3.0/#!guest-user/resource-definition
@@ -46,7 +45,7 @@ class Cisco::Ise::Guests < PlaceOS::Driver
 
     time_zone = setting?(String, :timezone).presence
     @timezone = Time::Location.load(time_zone) if time_zone
-    @custom_data = setting?(Hash(String, JSON::Any::Type), custom_data) || {} of String => JSON::Any::Type
+    @custom_data = setting?(Hash(String, JSON::Any::Type), :custom_data) || {} of String => JSON::Any::Type
   end
 
   def create_guest(
