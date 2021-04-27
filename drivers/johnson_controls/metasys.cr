@@ -198,11 +198,12 @@ class JohnsonControls::Metasys < PlaceOS::Driver
 
   @[Security(Level::Support)]
   def get_request(path : String, **params)
-    if params.size > 0
+    response = if params.size > 0
       get(path, headers: {"Authorization" => get_token}, params: stringify_params(**params))
     else
       get(path, headers: {"Authorization" => get_token})
     end
+    JSON.parse(response.body)
   end
 
   # Stringify param keys and values so that they're valid query params
