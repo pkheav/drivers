@@ -203,7 +203,16 @@ class JohnsonControls::Metasys < PlaceOS::Driver
     else
       get(path, headers: {"Authorization" => get_token})
     end
-    JSON.parse(response.body)
+    parsed_json_body = begin
+      JSON.parse(response.body)
+    rescue ex : JSON::ParseException
+      ex.to_s
+    end
+    {
+      body: response.body,
+      parsed_json_body: parsed_json_body,
+      status_code: response.status_code
+    }
   end
 
   # Stringify param keys and values so that they're valid query params
