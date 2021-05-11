@@ -42,6 +42,8 @@ class Place::Smtp < PlaceOS::Driver
   @tls_mode : EMail::Client::TLSMode = EMail::Client::TLSMode::STARTTLS
   @send_lock : Mutex = Mutex.new
 
+  @last_error : String = ""
+
   def on_load
     on_update
   end
@@ -80,6 +82,14 @@ class Place::Smtp < PlaceOS::Driver
 
     email_config.use_tls(@tls_mode)
 
+    email_config.on_failed = EMail::Client::OnFailedProc.new do |mail, command_history|
+      @last_error += "#{mail.data}\n#{command_history.join("\n")}"
+    end
+
+    email_config.on_fatal_error = EMail::Client::OnFatalErrorProc.new do |error|
+      @last_error += error.to_s
+    end
+
     EMail::Client.new(email_config)
   end
 
@@ -101,7 +111,8 @@ class Place::Smtp < PlaceOS::Driver
     cc : String | Array(String) = [] of String,
     bcc : String | Array(String) = [] of String,
     from : String | Array(String) | Nil = nil
-  ) : Bool
+  )
+    @last_error = ""
     to = {to} unless to.is_a?(Array)
 
     from = {from} unless from.nil? || from.is_a?(Array)
@@ -151,6 +162,7 @@ class Place::Smtp < PlaceOS::Driver
       end
     end
 
+    return {sent: sent, error: @last_error} if @last_error.size > 0
     sent
   end
 end
