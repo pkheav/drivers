@@ -18,7 +18,11 @@ class Place::LogicExample < PlaceOS::Driver
     main_lcd.power(state)
   end
 
-  def display_count
-    system.count(:Display)
+  def module_count(module_name : String)
+    system.count(module_name)
+  end
+
+  def module_exec(module_name : String, method_name : String)
+    system[module_name][method_name]
   end
 end
