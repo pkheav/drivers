@@ -25,4 +25,8 @@ class Place::LogicExample < PlaceOS::Driver
   def module_exec(module_name : String, method_name : String)
     system[module_name][method_name]
   end
+
+  def module_exec_access_token(module_name : String, method_name : String)
+    system[module_name].access_token
+  end
 end
