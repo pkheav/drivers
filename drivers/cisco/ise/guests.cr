@@ -64,7 +64,7 @@ class Cisco::Ise::Guests < PlaceOS::Driver
     first_name = guest_names[0..first_name_index_end].join(' ')
     last_name = guest_names[-1]
 
-    return {"username" => "#{first_name[0]}#{last_name.underscore}", "password" => UUID.random.to_s[0..-3]}.merge(@custom_data) if setting?(Bool, :test)
+    return {"username" => "#{first_name[0].downcase}#{last_name.underscore}", "password" => UUID.random.to_s[0..3]}.merge(@custom_data) if setting?(Bool, :test)
 
     sms_service_provider ||= @sms_service_provider
     guest_type ||= @guest_type
