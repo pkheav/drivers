@@ -12,13 +12,13 @@ class Cisco::Ise::Guests < PlaceOS::Driver
   uri_base "https://ise-pan:9060/ers/config"
 
   default_settings({
-    username:   "user",
-    password:   "pass",
-    portal_id:  "Required, ask cisco ISE admins",
-    timezone:   "Australia/Sydney",
-    guest_type: "Required, ask cisco ISE admins for valid subset of values",                              # e.g. Contractor
-    location:   "Required for ISE v2.2, ask cisco ISE admins for valid value. Else, remove for ISE v1.4", # e.g. New York
-    custom_data: {} of String => JSON::Any::Type
+    username:    "user",
+    password:    "pass",
+    portal_id:   "Required, ask cisco ISE admins",
+    timezone:    "Australia/Sydney",
+    guest_type:  "Required, ask cisco ISE admins for valid subset of values",                              # e.g. Contractor
+    location:    "Required for ISE v2.2, ask cisco ISE admins for valid value. Else, remove for ISE v1.4", # e.g. New York
+    custom_data: {} of String => JSON::Any::Type,
   })
 
   @basic_auth : String = ""
@@ -71,7 +71,7 @@ class Cisco::Ise::Guests < PlaceOS::Driver
     guest_type ||= @guest_type
     portal_id ||= @portal_id
 
-    time_object = Time.unix(event_start).in(@timezone)
+    time_object = Time.unix_ms(event_start).in(@timezone)
     from_date = time_object.at_beginning_of_day.to_s(TIME_FORMAT)
     to_date = time_object.at_end_of_day.to_s(TIME_FORMAT)
 
@@ -146,7 +146,7 @@ class Cisco::Ise::Guests < PlaceOS::Driver
     guest_info = guest_user.children.find { |c| c.name == "guestInfo" }.not_nil!
     {
       "username" => guest_info.children.find { |c| c.name == "userName" }.not_nil!.content,
-      "password" => guest_info.children.find { |c| c.name == "password" }.not_nil!.content
+      "password" => guest_info.children.find { |c| c.name == "password" }.not_nil!.content,
     }
   end
 end
