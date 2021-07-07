@@ -33,14 +33,14 @@ class DNB::DeskBooker < PlaceOS::Driver
 
     logger.debug { "vergesense_floor_key is #{@vergesense_floor_key}" }
 
+    update_data(system[:Vergesense_1][@vergesense_floor_key])
+
     system.subscribe(:Vergesense_1, @vergesense_floor_key) do |_subscription, vergesense_data|
-      parse_data(vergesense_data)
-    end unless @vergesense_floor_key.empty?
+      update_data(JSON.parse(vergesense_data))
+    end
   end
 
-  private def parse_data(vergesense_data)
-    vergesense_data = JSON.parse(vergesense_data)
-
+  private def extract_desks(vergesense_data)
     desks_by_floor = {} of String => Hash(String, JSON::Any)
     vergesense_data.as_h.each do |building_name, v|
       next if building_name == "connected"
@@ -55,11 +55,13 @@ class DNB::DeskBooker < PlaceOS::Driver
       end
       puts "There are #{desks_by_floor.values.first.values.size} desks"
     end
+    desks_by_floor
+  end
 
-    if self[:previous_data] = self[:current_data]?
-      check_desks(self[:previous_data], desks_by_floor)
-    end
-    self[:current_data] = desks_by_floor
+  private def update_data(vergesense_data)
+    new_data = extract_desks(vergesense_data)
+    check_desks(self[:previous_data], new_data) if self[:previous_data] = self[:current_data]?
+    self[:current_data] = new_data
   end
 
   private def check_desks(old_desk_data, new_desk_data)
