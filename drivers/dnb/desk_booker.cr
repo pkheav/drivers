@@ -31,13 +31,6 @@ class DNB::DeskBooker < PlaceOS::Driver
     @user_email = setting?(String, :user_email) || ""
     @vergesense_floor_key = setting?(String, :vergesense_floor_key) || ""
 
-    logger.debug { "vergesense_floor_key is #{@vergesense_floor_key}" }
-
-    logger.debug { "Vergesense data is" }
-    logger.debug { system[:Vergesense_1][@vergesense_floor_key] }
-
-    update_data(system[:Vergesense_1][@vergesense_floor_key])
-
     system.subscribe(:Vergesense_1, @vergesense_floor_key) do |_subscription, vergesense_data|
       update_data(JSON.parse(vergesense_data))
     end
@@ -45,12 +38,10 @@ class DNB::DeskBooker < PlaceOS::Driver
 
   private def extract_desks(vergesense_data)
     desks = {} of String => JSON::Any
-    puts "#{vergesense_data["spaces"].size} spaces"
     vergesense_data["spaces"].as_a.each do |s|
       next unless s["space_type"] == "desk"
       desks[s["space_ref_id"].as_s] = s
     end
-    puts "#{desks.size} desks"
     desks
   end
 
@@ -66,20 +57,20 @@ class DNB::DeskBooker < PlaceOS::Driver
       previous_desk_presence = desk_object["people"]["count"].as_i > 0
       current_desk_presence = new_desk_data[desk_id]["people"]["count"] == 1
       if previous_desk_presence && current_desk_presence
-        book_desk(desk_object)
-        desks_booked.push(desk_object["space_ref_id"].as_s)
+        book_desk(desk_id = desk_object["space_ref_id"].as_s)
+        desks_booked.push(desk_id)
       end
     end
     desks_booked
   end
 
-  private def book_desk(desk_object)
+  def book_desk(desk_id : String)
     current_time = Time.utc.in(@timezone)
     end_of_day = current_time.at_end_of_day
 
     staff_api.create_booking(
       booking_type: "desk",
-      asset_id: "desk_#{desk_object["space_ref_id"].as_s}",
+      asset_id: "desk_#{desk_id}",
       user_email: @user_email,
       user_name: "Desk Booker",
       zones: [@zone_id],
@@ -88,5 +79,7 @@ class DNB::DeskBooker < PlaceOS::Driver
       title: "Automatic booking",
       description: nil
     )
+
+    logger.debug { "Successfully booked desks #{desk_id}" }
   end
 end
