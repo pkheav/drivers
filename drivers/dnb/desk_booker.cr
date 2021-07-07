@@ -33,6 +33,9 @@ class DNB::DeskBooker < PlaceOS::Driver
 
     logger.debug { "vergesense_floor_key is #{@vergesense_floor_key}" }
 
+    logger.debug { "Vergesense data is" }
+    logger.debug { system[:Vergesense_1][@vergesense_floor_key] }
+
     update_data(system[:Vergesense_1][@vergesense_floor_key])
 
     system.subscribe(:Vergesense_1, @vergesense_floor_key) do |_subscription, vergesense_data|
