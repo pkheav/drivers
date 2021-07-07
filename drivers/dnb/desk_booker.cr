@@ -27,11 +27,11 @@ class DNB::DeskBooker < PlaceOS::Driver
     subscriptions.clear
 
     tz = setting?(String, :timezone).presence
-    @timezone = Time::Location.load(time_zone) if tz
+    @timezone = Time::Location.load(tz) if tz
     @user_email = setting?(String, :user_email) || ""
     @vergesense_floor_key = setting?(String, :vergesense_floor_key) || ""
 
-    logger.debug { "vergesense_floor_key is #{vergesense_floor_key}" }
+    logger.debug { "vergesense_floor_key is #{@vergesense_floor_key}" }
 
     system.subscribe(:Vergesense_1, @vergesense_floor_key) do |_subscription, vergesense_data|
       parse_data(vergesense_data)
