@@ -7,7 +7,7 @@ class DNB::DeskBooker < PlaceOS::Driver
   accessor staff_api : StaffAPI_1
 
   default_settings({
-    timezone: "Australia/Sydney",
+    timezone: "America/New_York",
     # user_id: "user-id",
     user_email: "user@email.com",
     vergesense_floor_key: "30_Hudson_Yards-81",
@@ -31,12 +31,8 @@ class DNB::DeskBooker < PlaceOS::Driver
     @user_email = setting?(String, :user_email) || ""
     @vergesense_floor_to_placeos_zone = setting?(String, :vergesense_floor_key) || ""
 
-    logger.debug { "vergesense floor key is #{@vergesense_floor_to_placeos_zone}" }
-
-    system.subscribe(:Vergesense_1, @vergesense_floor_key) do |_subscription, vergesense_data|
-      logger.debug { "received vergesense data" }
-      logger.debug { vergesense_data }
-      parse_data(vergesense_data)
+    system.subscribe(:Vergesense_1, @vergesense_floor_key) do |_subscription, new_value|
+      parse_data(new_value)
     end unless @vergesense_floor_key.empty?
   end
 
