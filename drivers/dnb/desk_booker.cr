@@ -11,7 +11,7 @@ class DNB::DeskBooker < PlaceOS::Driver
     # user_id: "user-id",
     user_email: "user@email.com",
     vergesense_floor_key: "30_Hudson_Yards-81",
-    zone_id: "zone-H1u-LL3~rFZ"
+    zone_id: "zone-HD_ZoJfBs5t"
   })
 
   @timezone : Time::Location = Time::Location.load("America/New_York")
@@ -26,13 +26,15 @@ class DNB::DeskBooker < PlaceOS::Driver
   def on_update
     subscriptions.clear
 
-    time_zone = setting?(String, :timezone).presence
-    @timezone = Time::Location.load(time_zone) if time_zone
+    tz = setting?(String, :timezone).presence
+    @timezone = Time::Location.load(time_zone) if tz
     @user_email = setting?(String, :user_email) || ""
-    @vergesense_floor_to_placeos_zone = setting?(String, :vergesense_floor_key) || ""
+    @vergesense_floor_key = setting?(String, :vergesense_floor_key) || ""
 
-    system.subscribe(:Vergesense_1, @vergesense_floor_key) do |_subscription, new_value|
-      parse_data(new_value)
+    logger.debug { "vergesense_floor_key is #{vergesense_floor_key}" }
+
+    system.subscribe(:Vergesense_1, @vergesense_floor_key) do |_subscription, vergesense_data|
+      parse_data(vergesense_data)
     end unless @vergesense_floor_key.empty?
   end
 
