@@ -44,37 +44,33 @@ class DNB::DeskBooker < PlaceOS::Driver
   end
 
   private def extract_desks(vergesense_data)
-    desks_by_floor = {} of String => Hash(String, JSON::Any)
-    vergesense_data.as_h.each do |building_name, v|
-      next if building_name == "connected"
-      puts building_name
-      puts v["spaces"].size
-      v["spaces"].as_a.each do |s|
-        next unless s["space_type"] == "desk"
-        floor_ref_id = s["floor_ref_id"].as_s
-        puts "floor_ref_id = #{floor_ref_id}"
-        desks_by_floor[floor_ref_id] ||= {} of String => JSON::Any
-        desks_by_floor[floor_ref_id][s["space_ref_id"].as_s] = s
-      end
-      puts "There are #{desks_by_floor.values.first.values.size} desks"
+    desks = {} of String => JSON::Any
+    puts "#{vergesense_data["spaces"].size} spaces"
+    vergesense_data["spaces"].as_a.each do |s|
+      next unless s["space_type"] == "desk"
+      desks[s["space_ref_id"].as_s] = s
     end
-    desks_by_floor
+    puts "#{desks.size} desks"
+    desks
   end
 
   private def update_data(vergesense_data)
     new_data = extract_desks(vergesense_data)
-    check_desks(self[:previous_data], new_data) if self[:previous_data] = self[:current_data]?
+    self[:recently_booked_desks] = check_desks(self[:previous_data], new_data) if self[:previous_data] = self[:current_data]?
     self[:current_data] = new_data
   end
 
   private def check_desks(old_desk_data, new_desk_data)
-    old_desk_data.as_h.each do |level_name, desks|
-      desks.as_h.each do |desk_id, desk_object|
-        previous_desk_presence = desk_object["people"]["count"].as_i > 0
-        current_desk_presence = new_desk_data[level_name][desk_id]["people"]["count"] == 1
-        book_desk(desk_object) if previous_desk_presence && current_desk_presence
+    desks_booked = [] of String
+    old_desk_data.as_h.each do |desk_id, desk_object|
+      previous_desk_presence = desk_object["people"]["count"].as_i > 0
+      current_desk_presence = new_desk_data[desk_id]["people"]["count"] == 1
+      if previous_desk_presence && current_desk_presence
+        book_desk(desk_object)
+        desks_booked.push(desk_object["space_ref_id"].as_s)
       end
     end
+    desks_booked
   end
 
   private def book_desk(desk_object)
