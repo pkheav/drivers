@@ -8,14 +8,14 @@ class DNB::DeskBooker < PlaceOS::Driver
 
   default_settings({
     timezone: "America/New_York",
-    # user_id: "user-id",
-    user_email: "user@email.com",
+    user_email: "desk_booker@place.tech",
     vergesense_floor_key: "30_Hudson_Yards-81",
     zone_id: "zone-HD_ZoJfBs5t"
   })
 
   @timezone : Time::Location = Time::Location.load("America/New_York")
   @user_email : String = ""
+  @user_id : String = ""
   @vergesense_floor_key : String = ""
   @zone_id : String = ""
 
@@ -29,6 +29,7 @@ class DNB::DeskBooker < PlaceOS::Driver
     tz = setting?(String, :timezone).presence
     @timezone = Time::Location.load(tz) if tz
     @user_email = setting?(String, :user_email) || ""
+    @user_id = Base64.encode(@user_email.downcase)
     @vergesense_floor_key = setting?(String, :vergesense_floor_key) || ""
 
     system.subscribe(:Vergesense_1, @vergesense_floor_key) do |_subscription, vergesense_data|
@@ -67,19 +68,28 @@ class DNB::DeskBooker < PlaceOS::Driver
   def book_desk(desk_id : String)
     current_time = Time.utc.in(@timezone)
     end_of_day = current_time.at_end_of_day
+    info = "Automatic booking for #{desk_id}"
 
-    staff_api.create_booking(
+    params = {
       booking_type: "desk",
       asset_id: "desk_#{desk_id}",
+      user_id: @user_id,
       user_email: @user_email,
       user_name: "Desk Booker",
       zones: [@zone_id],
       booking_start: current_time,
       booking_end: end_of_day,
-      title: "Automatic booking",
-      description: nil
-    )
+      approved: true,
+      title: info,
+      description: info
+    }
 
-    logger.debug { "Successfully booked desks #{desk_id}" }
+    logger.debug { "Booking desk with params" }
+    logger.debug { params }
+
+    response = staff_api.create_booking(**params)
+
+    logger.debug { "Successfully booked desk #{desk_id}" }
+    response
   end
 end
